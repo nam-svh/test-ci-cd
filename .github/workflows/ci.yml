@@ -47,7 +47,7 @@ jobs:
       
     - name: Install Flutter SDK from FVM config
       run: |
-        fvm install
+        fvm install stable
       
     - name: Print Flutter SDK version
       run: |
