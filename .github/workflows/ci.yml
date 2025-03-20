@@ -12,42 +12,30 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      FVM_HOME: /home/runner/.fvm
+      FVM_USE_LOCAL_MIRROR: false
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Cache Dart SDK (nếu cần)
-    - name: Cache Dart SDK
+    # Cache .fvm directory (in project) + FVM_HOME (global versions)
+    - name: Cache FVM (project + global versions)
       uses: actions/cache@v4
       with:
-        path: /opt/hostedtoolcache/dart
-        key: ${{ runner.os }}-dart-${{ hashFiles('**/pubspec.yaml') }}
+        path: |
+          .fvm
+          ${{ env.FVM_HOME }}/versions
+        key: ${{ runner.os }}-fvm-${{ hashFiles('.fvm/fvm_config.json') }}
         restore-keys: |
-          ${{ runner.os }}-dart-
-
-    # Cache Flutter SDK (FVM version folder)
-    - name: Cache Flutter SDK (FVM)
-      uses: actions/cache@v4
-      with:
-        path: /home/runner/fvm/versions
-        key: ${{ runner.os }}-flutter-${{ hashFiles('fvm_config.json') }}
-        restore-keys: |
-          ${{ runner.os }}-flutter-
-
-    # Cache .fvm config to retain fvm_config.json and related files
-    - name: Cache FVM config
-      uses: actions/cache@v4
-      with:
-        path: .fvm
-        key: ${{ runner.os }}-fvm-config-${{ hashFiles('.fvm/fvm_config.json') }}
-        restore-keys: |
-          ${{ runner.os }}-fvm-config-
+          ${{ runner.os }}-fvm-
 
     # Setup Dart SDK
     - name: Download Dart SDK
       uses: dart-lang/setup-dart@v1
 
-    # Install global packages
+    # Activate global packages
     - name: Activate FVM and Melos globally
       run: |
         dart pub global activate fvm
@@ -57,28 +45,18 @@ jobs:
     - name: Add global pub-cache bin to PATH
       run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
-    # Set FVM_HOME to point to cached directory
-    - name: Set FVM cache directory
-      run: |
-        echo "FVM_HOME=/home/runner/fvm" >> $GITHUB_ENV
-
-    # Install Flutter SDK (check cache first)
+    # Install Flutter SDK from FVM config without local mirror
     - name: Install Flutter SDK from FVM config
       run: |
-        if [ -d "$FVM_HOME/versions/3.27.4" ]; then
-          echo "✅ Flutter 3.27.4 found in cache."
-        else
-          echo "⚠️ Flutter 3.27.4 not found, installing..."
-          fvm install 3.27.4
-        fi
-        fvm use 3.27.4 --force
+        fvm install --no-local-mirror
+        fvm use --force
         fvm flutter --version
         fvm list
 
-    # # Bootstrap Melos (if using monorepo)
+    # Optional: Bootstrap Melos (for monorepo)
     # - name: Bootstrap Melos
     #   run: fvm flutter pub get && melos bootstrap
 
-    # # Run your tests here (example)
+    # Optional: Run Tests
     # - name: Run Tests
     #   run: fvm flutter test
