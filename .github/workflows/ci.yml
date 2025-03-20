@@ -16,6 +16,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    - name: Cache Dart SDK
+      uses: actions/cache@v4
+      with:
+        path: /opt/hostedtoolcache/dart
+        key: ${{ runner.os }}-dart-${{ hashFiles('**/pubspec.yaml') }}
+        restore-keys: |
+          ${{ runner.os }}-dart-
+
     - name: Download Dart SDK
       uses: dart-lang/setup-dart@v1
 
@@ -28,10 +36,3 @@ jobs:
 # Dart SDK version: 3.7.2 (stable) (Tue Mar 11 04:27:50 2025 -0700) on "linux_x64"
 # /opt/hostedtoolcache/dart/3.7.2/x64/bin/dart
 
-    - name: Cache Dart dependencies
-      uses: actions/cache@v4
-      with:
-        path: /opt/hostedtoolcache/dart
-        key: ${{ runner.os }}-dart-${{ hashFiles('**/pubspec.yaml') }}
-        restore-keys: |
-          ${{ runner.os }}-dart-
