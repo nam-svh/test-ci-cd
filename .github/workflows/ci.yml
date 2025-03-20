@@ -16,6 +16,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
+    # Cache Dart SDK (nếu cần)
     - name: Cache Dart SDK
       uses: actions/cache@v4
       with:
@@ -24,6 +25,7 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-dart-
 
+    # Cache Flutter SDK (FVM version folder)
     - name: Cache Flutter SDK (FVM)
       uses: actions/cache@v4
       with:
@@ -32,25 +34,51 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-flutter-
 
+    # Cache .fvm config to retain fvm_config.json and related files
+    - name: Cache FVM config
+      uses: actions/cache@v4
+      with:
+        path: .fvm
+        key: ${{ runner.os }}-fvm-config-${{ hashFiles('.fvm/fvm_config.json') }}
+        restore-keys: |
+          ${{ runner.os }}-fvm-config-
+
+    # Setup Dart SDK
     - name: Download Dart SDK
       uses: dart-lang/setup-dart@v1
 
+    # Install global packages
     - name: Activate FVM and Melos globally
       run: |
         dart pub global activate fvm
         dart pub global activate melos
 
+    # Add pub-cache bin to PATH
     - name: Add global pub-cache bin to PATH
       run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
-    # 🔴 Thêm biến FVM_HOME để trỏ đúng thư mục cache
+    # Set FVM_HOME to point to cached directory
     - name: Set FVM cache directory
       run: |
         echo "FVM_HOME=/home/runner/fvm" >> $GITHUB_ENV
 
+    # Install Flutter SDK (check cache first)
     - name: Install Flutter SDK from FVM config
       run: |
-        fvm install 3.27.4
+        if [ -d "$FVM_HOME/versions/3.27.4" ]; then
+          echo "✅ Flutter 3.27.4 found in cache."
+        else
+          echo "⚠️ Flutter 3.27.4 not found, installing..."
+          fvm install 3.27.4
+        fi
         fvm use 3.27.4 --force
         fvm flutter --version
         fvm list
+
+    # # Bootstrap Melos (if using monorepo)
+    # - name: Bootstrap Melos
+    #   run: fvm flutter pub get && melos bootstrap
+
+    # # Run your tests here (example)
+    # - name: Run Tests
+    #   run: fvm flutter test
