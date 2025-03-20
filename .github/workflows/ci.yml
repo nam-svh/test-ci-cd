@@ -25,7 +25,7 @@ jobs:
           ${{ runner.os }}-dart-
 
     - name: Download Dart SDK
-      uses: dart-lang/setup-dart@v4
+      uses: dart-lang/setup-dart@v1
 
     - name: Check Dart SDK
       run: | 
