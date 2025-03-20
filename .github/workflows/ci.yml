@@ -28,7 +28,7 @@ jobs:
       uses: actions/cache@v4
       with:
         path: |
-          .fvm/versions
+          /home/runner/fvm/versions
         key: ${{ runner.os }}-flutter-${{ hashFiles('fvm_config.json') }}
         restore-keys: |
           ${{ runner.os }}-flutter-
