@@ -36,11 +36,6 @@ jobs:
       run: |
         dart pub global activate fvm
         dart pub global activate melos
-
-    - name: Activate FVM and Melos globally
-      run: |
-        dart pub global activate fvm
-        dart pub global activate melos
       
     - name: Add global pub-cache bin to PATH
       run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
