@@ -31,8 +31,27 @@ jobs:
       run: | 
         dart --version
         which dart
-    
-#         Run dart --version
-# Dart SDK version: 3.7.2 (stable) (Tue Mar 11 04:27:50 2025 -0700) on "linux_x64"
-# /opt/hostedtoolcache/dart/3.7.2/x64/bin/dart
+
+    - name: Activate FVM and Melos globally
+      run: |
+        dart pub global activate fvm
+        dart pub global activate melos
+
+    - name: Activate FVM and Melos globally
+      run: |
+        dart pub global activate fvm
+        dart pub global activate melos
+      
+    - name: Add global pub-cache bin to PATH
+      run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+      
+    - name: Install Flutter SDK from FVM config
+      run: |
+        fvm install
+      
+    - name: Print Flutter SDK version
+      run: |
+        fvm flutter --version
+        fvm list
+      
 
