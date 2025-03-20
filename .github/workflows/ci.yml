@@ -27,8 +27,7 @@ jobs:
     - name: Cache Flutter SDK (FVM)
       uses: actions/cache@v4
       with:
-        path: |
-          /home/runner/fvm/versions
+        path: /home/runner/fvm/versions
         key: ${{ runner.os }}-flutter-${{ hashFiles('fvm_config.json') }}
         restore-keys: |
           ${{ runner.os }}-flutter-
@@ -44,8 +43,14 @@ jobs:
     - name: Add global pub-cache bin to PATH
       run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
+    # 🔴 Thêm biến FVM_HOME để trỏ đúng thư mục cache
+    - name: Set FVM cache directory
+      run: |
+        echo "FVM_HOME=/home/runner/fvm" >> $GITHUB_ENV
+
     - name: Install Flutter SDK from FVM config
       run: |
         fvm install 3.27.4
         fvm use 3.27.4 --force
+        fvm flutter --version
         fvm list
