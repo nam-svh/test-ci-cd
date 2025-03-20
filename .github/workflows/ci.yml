@@ -24,6 +24,15 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-dart-
 
+    - name: Cache Flutter SDK (FVM)
+      uses: actions/cache@v4
+      with:
+        path: |
+          .fvm/versions
+        key: ${{ runner.os }}-flutter-${{ hashFiles('fvm_config.json') }}
+        restore-keys: |
+          ${{ runner.os }}-flutter-
+
     - name: Download Dart SDK
       uses: dart-lang/setup-dart@v1
 
