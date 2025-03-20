@@ -45,12 +45,7 @@ jobs:
       run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
     - name: Install Flutter SDK from FVM config
-      run: fvm install stable
-
-    - name: Add FVM Flutter to PATH
-      run: echo "$(fvm flutter --path)/bin" >> $GITHUB_PATH
-
-    - name: Print Flutter SDK version
       run: |
-        fvm flutter --version
+        fvm install stable
+        fvm use ${{ env.flutter_version }} --force
         fvm list
