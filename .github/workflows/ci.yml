@@ -46,6 +46,6 @@ jobs:
 
     - name: Install Flutter SDK from FVM config
       run: |
-        fvm install stable
-        fvm use ${{ env.flutter_version }} --force
+        fvm install 3.27.4
+        fvm use 3.27.4 --force
         fvm list
