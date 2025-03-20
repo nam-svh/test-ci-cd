@@ -13,20 +13,19 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      FVM_HOME: /home/runner/.fvm
-      FVM_USE_LOCAL_MIRROR: false
+      FVM_CACHE_PATH: /home/runner/.fvm
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Cache .fvm directory (in project) + FVM_HOME (global versions)
+    # Cache .fvm directory (in project) + global cache dir
     - name: Cache FVM (project + global versions)
       uses: actions/cache@v4
       with:
         path: |
           .fvm
-          ${{ env.FVM_HOME }}/versions
+          ${{ env.FVM_CACHE_PATH }}/versions
         key: ${{ runner.os }}-fvm-${{ hashFiles('.fvm/fvm_config.json') }}
         restore-keys: |
           ${{ runner.os }}-fvm-
@@ -45,10 +44,10 @@ jobs:
     - name: Add global pub-cache bin to PATH
       run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
-    # Install Flutter SDK from FVM config without local mirror
+    # Install Flutter SDK from FVM config
     - name: Install Flutter SDK from FVM config
       run: |
-        fvm install --no-local-mirror
+        fvm install
         fvm use --force
         fvm flutter --version
         fvm list
@@ -59,4 +58,4 @@ jobs:
 
     # Optional: Run Tests
     # - name: Run Tests
-    #   run: fvm flutter test
+ 
