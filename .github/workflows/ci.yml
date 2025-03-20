@@ -47,8 +47,8 @@ jobs:
     # Install Flutter SDK from FVM config
     - name: Install Flutter SDK from FVM config
       run: |
-        fvm install
-        fvm use --force
+        fvm install 3.27.4
+        fvm use 3.27.4 --force
         fvm flutter --version
         fvm list
 
