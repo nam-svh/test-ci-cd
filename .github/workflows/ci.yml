@@ -27,26 +27,21 @@ jobs:
     - name: Download Dart SDK
       uses: dart-lang/setup-dart@v1
 
-    - name: Check Dart SDK
-      run: | 
-        dart --version
-        which dart
-
     - name: Activate FVM and Melos globally
       run: |
         dart pub global activate fvm
         dart pub global activate melos
-      
+
     - name: Add global pub-cache bin to PATH
       run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
-      
+
     - name: Install Flutter SDK from FVM config
-      run: |
-        fvm install stable
-      
+      run: fvm install stable
+
+    - name: Add FVM Flutter to PATH
+      run: echo "$(fvm flutter --path)/bin" >> $GITHUB_PATH
+
     - name: Print Flutter SDK version
       run: |
         fvm flutter --version
         fvm list
-      
-
