@@ -56,15 +56,13 @@ jobs:
     # Install Flutter SDK from FVM config
     - name: Install Flutter SDK from FVM config
       run: |
-        fvm install 3.27.4
+        if [ -d "${FVM_CACHE_PATH}/versions/3.27.4" ]; then
+          echo "✅ Flutter SDK 3.27.4 FOUND in FVM cache at ${FVM_CACHE_PATH}/versions/3.27.4"
+        else
+          echo "⬇️ Flutter SDK 3.27.4 NOT FOUND in FVM cache, will download via FVM"
+          fvm install 3.27.4
+        fi
+
         fvm use 3.27.4 --force
         fvm flutter --version
         fvm list
-
-    # Optional: Bootstrap Melos (for monorepo)
-    # - name: Bootstrap Melos
-    #   run: fvm flutter pub get && melos bootstrap
-
-    # Optional: Run Tests
-    # - name: Run Tests
-    #   run: fvm flutter test
