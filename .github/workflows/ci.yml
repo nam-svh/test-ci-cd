@@ -20,16 +20,7 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Inspect full project structure
-      run: |
-        echo "\$ ls -la"
-        ls -la
-        echo "\$ ls -la \$HOME"
-        ls -la $HOME
-        echo "\$ ls -laR ."
-        ls -laR . | head -n 500 || true  # tránh log quá dài
-
-    # Cache FVM (project .fvm + global SDK versions)
+    # Cache FVM (project + global SDK versions)
     - name: Cache FVM (project + global versions)
       id: fvm-cache
       uses: actions/cache@v4
@@ -84,8 +75,8 @@ jobs:
           echo "⚠️ .dart_tool Cache MISS"
         fi
 
-    # Setup Dart SDK
-    - name: Download Dart SDK
+    # Setup Dart SDK (chỉ để cài FVM)
+    - name: Setup Dart SDK (for FVM)
       uses: dart-lang/setup-dart@v1
 
     # Activate FVM and Melos globally
@@ -110,7 +101,8 @@ jobs:
         fvm use ${FLUTTER_VERSION} --force
         fvm flutter --version
         fvm list
-    # Flutter pub get (optional nếu cần)
+
+    # Flutter pub get (root)
     - name: Flutter pub get (root)
       run: fvm flutter pub get
 
