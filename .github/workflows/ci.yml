@@ -20,17 +20,14 @@ jobs:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    - name: Inspect project folders
+    - name: Inspect full project structure
       run: |
-        echo "🔍 Checking .fvm directory"
-        ls -la .fvm || echo ".fvm folder not found"
-        echo "🔍 Checking .dart_tool directories"
-        ls -la .dart_tool || echo ".dart_tool not found at root"
-        ls -la apps/**/.dart_tool || echo ".dart_tool not found in apps"
-        ls -la packages/**/.dart_tool || echo ".dart_tool not found in packages"
-    
-        echo "🔍 Checking pub-cache"
-        ls -la ~/.pub-cache || echo "pub-cache folder not found"
+        echo "\$ ls -la"
+        ls -la
+        echo "\$ ls -la \$HOME"
+        ls -la $HOME
+        echo "\$ ls -laR ."
+        ls -laR . | head -n 500 || true  # tránh log quá dài
 
     # Cache FVM (project .fvm + global SDK versions)
     - name: Cache FVM (project + global versions)
