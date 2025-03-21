@@ -22,6 +22,7 @@ jobs:
 
     # Cache FVM (project .fvm + global SDK versions)
     - name: Cache FVM (project + global versions)
+      id: fvm-cache
       uses: actions/cache@v4
       with:
         path: |
@@ -30,18 +31,34 @@ jobs:
         key: ${{ runner.os }}-fvm-${{ env.FLUTTER_VERSION }}-${{ hashFiles('.fvm/fvm_config.json') }}
         restore-keys: |
           ${{ runner.os }}-fvm-
+    - name: Check FVM Cache status
+      run: |
+        if [ "${{ steps.fvm-cache.outputs.cache-hit }}" == "true" ]; then
+          echo "✅ FVM Cache HIT"
+        else
+          echo "⚠️ FVM Cache MISS - Will install Flutter SDK"
+        fi
 
     # Cache pub-cache
     - name: Cache Dart pub-cache
+      id: pub-cache
       uses: actions/cache@v4
       with:
         path: ~/.pub-cache
         key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/pubspec.lock') }}
         restore-keys: |
           ${{ runner.os }}-pub-cache-
+    - name: Check pub-cache status
+      run: |
+        if [ "${{ steps.pub-cache.outputs.cache-hit }}" == "true" ]; then
+          echo "✅ Pub Cache HIT"
+        else
+          echo "⚠️ Pub Cache MISS - Will run pub get"
+        fi
 
     # Cache .dart_tool (root + packages/**)
     - name: Cache .dart_tool folders
+      id: dart-tool-cache
       uses: actions/cache@v4
       with:
         path: |
@@ -50,6 +67,13 @@ jobs:
         key: ${{ runner.os }}-dart-tool-${{ hashFiles('**/pubspec.lock') }}
         restore-keys: |
           ${{ runner.os }}-dart-tool-
+    - name: Check .dart_tool cache status
+      run: |
+        if [ "${{ steps.dart-tool-cache.outputs.cache-hit }}" == "true" ]; then
+          echo "✅ .dart_tool Cache HIT"
+        else
+          echo "⚠️ .dart_tool Cache MISS"
+        fi
 
     # Setup Dart SDK
     - name: Download Dart SDK
@@ -65,26 +89,26 @@ jobs:
     - name: Add global pub-cache bin to PATH
       run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
-    # Install Flutter SDK from FVM config
+    # Install Flutter SDK from FVM config + log
     - name: Install Flutter SDK from FVM config
       run: |
-        fvm install $FLUTTER_VERSION
-        fvm use $FLUTTER_VERSION --force
+        if [ -d "${FVM_CACHE_PATH}/versions/${FLUTTER_VERSION}" ]; then
+          echo "✅ Flutter SDK ${FLUTTER_VERSION} FOUND in cache at ${FVM_CACHE_PATH}/versions/${FLUTTER_VERSION}"
+        else
+          echo "⬇️ Flutter SDK ${FLUTTER_VERSION} NOT FOUND in cache, downloading..."
+          fvm install ${FLUTTER_VERSION}
+        fi
+        fvm use ${FLUTTER_VERSION} --force
         fvm flutter --version
         fvm list
-
-    # Melos bootstrap (optimized)
-    - name: Bootstrap Melos workspace
-      run: |
-        melos bootstrap --no-private
-
-    # Run flutter pub get (optional if bootstrap không đủ)
+    # Flutter pub get (optional nếu cần)
     - name: Flutter pub get (root)
       run: fvm flutter pub get
 
-    # Example: Run analyze & test
+    # Analyze
     - name: Analyze
       run: fvm flutter analyze .
 
+    # Test
     - name: Run Tests
       run: fvm flutter test
