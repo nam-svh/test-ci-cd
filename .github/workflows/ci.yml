@@ -14,36 +14,48 @@ jobs:
 
     env:
       FVM_CACHE_PATH: /home/runner/.fvm
+      FLUTTER_VERSION: 3.27.4
 
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
 
-    # Cache FVM (project .fvm folder + global SDK versions)
+    # Cache FVM (project .fvm + global SDK versions)
     - name: Cache FVM (project + global versions)
       uses: actions/cache@v4
       with:
         path: |
           .fvm
           ${{ env.FVM_CACHE_PATH }}/versions
-        key: ${{ runner.os }}-fvm-${{ hashFiles('.fvm/fvm_config.json') }}
+        key: ${{ runner.os }}-fvm-${{ env.FLUTTER_VERSION }}-${{ hashFiles('.fvm/fvm_config.json') }}
         restore-keys: |
           ${{ runner.os }}-fvm-
 
-    # Cache Dart pub-cache (global packages)
+    # Cache pub-cache
     - name: Cache Dart pub-cache
       uses: actions/cache@v4
       with:
         path: ~/.pub-cache
-        key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/pubspec.yaml') }}
+        key: ${{ runner.os }}-pub-cache-${{ hashFiles('**/pubspec.lock') }}
         restore-keys: |
           ${{ runner.os }}-pub-cache-
+
+    # Cache .dart_tool (root + packages/**)
+    - name: Cache .dart_tool folders
+      uses: actions/cache@v4
+      with:
+        path: |
+          .dart_tool
+          packages/**/.dart_tool
+        key: ${{ runner.os }}-dart-tool-${{ hashFiles('**/pubspec.lock') }}
+        restore-keys: |
+          ${{ runner.os }}-dart-tool-
 
     # Setup Dart SDK
     - name: Download Dart SDK
       uses: dart-lang/setup-dart@v1
 
-    # Activate global packages
+    # Activate FVM and Melos globally
     - name: Activate FVM and Melos globally
       run: |
         dart pub global activate fvm
@@ -56,13 +68,23 @@ jobs:
     # Install Flutter SDK from FVM config
     - name: Install Flutter SDK from FVM config
       run: |
-        if [ -d "${FVM_CACHE_PATH}/versions/3.27.4" ]; then
-          echo "✅ Flutter SDK 3.27.4 FOUND in FVM cache at ${FVM_CACHE_PATH}/versions/3.27.4"
-        else
-          echo "⬇️ Flutter SDK 3.27.4 NOT FOUND in FVM cache, will download via FVM"
-          fvm install 3.27.4
-        fi
-
-        fvm use 3.27.4 --force
+        fvm install $FLUTTER_VERSION
+        fvm use $FLUTTER_VERSION --force
         fvm flutter --version
         fvm list
+
+    # Melos bootstrap (optimized)
+    - name: Bootstrap Melos workspace
+      run: |
+        melos bootstrap --no-private
+
+    # Run flutter pub get (optional if bootstrap không đủ)
+    - name: Flutter pub get (root)
+      run: fvm flutter pub get
+
+    # Example: Run analyze & test
+    - name: Analyze
+      run: fvm flutter analyze .
+
+    - name: Run Tests
+      run: fvm flutter test
